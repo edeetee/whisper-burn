@@ -14,3 +14,9 @@ Cargo.lock
 *.pdb
 
 **/.DS_Store
+
+tokenizer.json
+transcription.txt
+tiny_en.cfg
+tiny_en.mpk.gz
+audio16k.wav

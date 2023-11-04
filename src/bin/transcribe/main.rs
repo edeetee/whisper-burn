@@ -3,8 +3,8 @@ use std::iter;
 
 use whisper::helper::*;
 use whisper::model::*;
-use whisper::{token, token::Language};
 use whisper::transcribe::waveform_to_text;
+use whisper::{token, token::Language};
 
 use strum::IntoEnumIterator;
 
@@ -12,7 +12,7 @@ cfg_if::cfg_if! {
     if #[cfg(feature = "wgpu-backend")] {
         use burn_wgpu::{WgpuBackend, WgpuDevice, AutoGraphicsApi};
     } else if #[cfg(feature = "torch-backend")] {
-        use burn_tch::{TchBackend, TchDevice};
+        use burn_tch::{LibTorch, LibTorchDevice};
     }
 }
 
@@ -71,14 +71,21 @@ fn load_whisper_model_file<B: Backend>(
 
 use std::{env, fs, process};
 
+fn lib_torch_device() -> LibTorchDevice {
+    #[cfg(not(target_os = "macos"))]
+    return LibTorchDevice::Cuda(0);
+    #[cfg(target_os = "macos")]
+    return LibTorchDevice::Mps;
+}
+
 fn main() {
     cfg_if::cfg_if! {
         if #[cfg(feature = "wgpu-backend")] {
             type Backend = WgpuBackend<AutoGraphicsApi, f32, i32>;
             let device = WgpuDevice::BestAvailable;
         } else if #[cfg(feature = "torch-backend")] {
-            type Backend = TchBackend<f32>;
-            let device = TchDevice::Cuda(0);
+            type Backend = LibTorch<f32>;
+            let device = lib_torch_device();
         }
     }
 
@@ -97,7 +104,7 @@ fn main() {
 
     let lang_str = &args[3];
     let lang = match Language::iter().find(|lang| lang.as_str() == lang_str) {
-        Some(lang) => lang, 
+        Some(lang) => lang,
         None => {
             eprintln!("Invalid language abbreviation: {}", lang_str);
             process::exit(1);
