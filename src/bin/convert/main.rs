@@ -3,9 +3,7 @@ use whisper::model::{load::*, *};
 use burn::{
     module::Module,
     tensor::{
-        self,
-        backend::{self, Backend},
-        Int, Tensor,
+        backend::{Backend},
     },
 };
 
@@ -30,7 +28,7 @@ fn main() {
     };
 
     type Backend = LibTorch<f32>;
-    let device = LibTorchDevice::Cpu;
+    let _device = LibTorchDevice::Cpu;
 
     let (whisper, whisper_config): (Whisper<Backend>, WhisperConfig) =
         match load_whisper(&model_name) {
